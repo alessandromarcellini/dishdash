@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <style>
+        #orders_container {
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .order {
+            background-color: grey;
+            border-radius: 5px;
+            margin-bottom: 50px;
+        }
+
+        .order .to_do {
+            background-color: red;
+        }
+
+        .order .done {
+            background-color: green;
+        }
+
+        .item_container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .check_complete {
+            margin-left: 30px;
+            background-color: green;
+            width: 20px;
+            height: 20px;
+        }
+
+        .check_incomplete {
+            margin-left: 30px;
+            background-color: red;
+            width: 20px;
+            height: 20px;
+        }
+
+    </style>
+
+</head>
+<body>
+    <h1>{{ kitchen_section.name }}</h1>
+    <div id="orders_container">
+        {% for order in orders_to_display %}
+            <div id="{{ order.id }}" class="order">
+                {% if order.takeaway %}
+                    <h5>TakeAway</h5>
+                    <p>{{ order.date_time }}</p>
+                {% else %}
+                    <h5>TABLE: {{ order.table.number }}</h5>
+                {% endif %}
+                {% for orderItem in order.dishes.all %}
+                    <div class="item_container">
+                        <p class="{% if orderItem.is_done%} done {% else %} to_do {% endif %}">{{ orderItem.dish.name }} x {{ orderItem.quantity }}</p>
+                        <div class="check_complete" id="compleate_{{ orderItem.id }}" item-id="{{ orderItem.id }}" item-txt="{{ orderItem.dish.name }} x {{ orderItem.quantity }}"></div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function get_order_to_append_to (order_id) {
+            const orders_container = document.getElementById("orders_container");
+
+            for (const child of orders_container.children) {
+                if (child.id == order_id) {
+                    return child;
+                }
+
+            }
+            return null;
+        }
+
+        function check_complete(check) {
+            console.log(check.getAttribute("item-id"));
+            var item_txt = check.getAttribute("item-txt");
+            if (window.confirm('Are you sure you want to check "' + item_txt + '" as complete?')) {
+                console.log("YS");
+            }
+            else {
+                return;
+            }
+
+            //TODO: send to the api the request to make it done
+
+            //change the element
+            check.className = "check_incomplete";
+            check.onclick = function() {
+                check_incomplete(check);
+            }
+            
+        }
+
+        function check_incomplete(check) {
+            console.log(check.getAttribute("item-id"));
+            //TODO: send to the api the request to make it not done
+            var item_txt = check.getAttribute("item-txt");
+            if (window.confirm('Are you sure you want to check "' + item_txt + '" as not complete?')) {
+                console.log("YS");
+            }
+            else {
+                return;
+            }
+
+            check.className = "check_complete";
+            check.onclick = function() {
+                check_complete(check);
+            }
+        }
+
+
+        var check_completes = document.getElementsByClassName("check_complete");
+        var check_incompletes = document.getElementsByClassName("check_incomplete");
+
+        for (const check of check_completes) {
+            check.onclick = function() {
+                check_complete(check);
+            }
+        }
+
+        for (const check of check_incompletes) {
+            check.onclick = function() {
+                check_incomplete(check);
+            }
+        }
+
+
+        // ----------------------------------------------------------------------------------------------
+
+        const socket = new WebSocket("ws://" + window.location.host + "/ws/{{ kitchen_section.id }}/");
+        console.log(socket);
+
+        socket.onmessage = function(e) {
+            var data = JSON.parse(e.data);
+            console.log(data);
+
+            if (data.type == "kitchen_section_message") {
+                //check all divs inside orders_container => if data.order_id == one of the id of the div => that div is the output and append p
+                //else output is orders_container and append div
+                var output = get_order_to_append_to(data.data.order_id);
+                var to_append;
+                if (output) {
+                    //append p to output
+                    to_append = document.createElement("p");
+                    to_append.textContent = data.data.dish_name + " x " + data.data.quantity;
+                    to_append.className = data.data.is_dish_done ? "done" : "to_do";
+                }
+                else {
+                    //append new order
+                    output = document.getElementById("orders_container");
+                    to_append = document.createElement("div");
+                    to_append.id = data.data.order_id;
+                    const table_number = document.createElement("h5");
+                    table_number.textContent = "Table: " + data.data.table_number;
+                    const item = document.createElement("p");
+                    item.textContent = data.data.dish_name + " x " + data.data.quantity;
+                    item.class = data.data.is_dish_done ? "done" : "to_do";
+                    to_append.appendChild(table_number);
+                    to_append.appendChild(item);
+                }
+                output.appendChild(to_append);
+
+                // var text = document.createTextNode(data.message + "\n");
+                // output.appendChild(text);
+            }
+            else {
+                console.log(data.type);
+            }
+        }
+    </script>
+</body>
+</html>

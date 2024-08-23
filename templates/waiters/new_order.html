@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NEW ORDER</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+        }
+
+        .order {
+            background-color: #D9D9D9;
+            padding: 10px 30px 30px 30px;
+            border-radius: 10px;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        #add_item {
+            background-color: red;
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        #form_container {
+            margin-top: 30px;
+            display: none;
+        }
+
+        #new_item_form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #new_item_form input {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="order">
+        <h4>Table: {{ table.number }}</h4>
+        {% if current_order %}
+            {% for item in current_order.dishes.all %}
+               <p>{{ item.dish.name }} x {{  item.quantity }}</p>
+            {% endfor %}
+        {% endif %}
+        <a id="add_item">Add New Item</a>
+
+        <div id="form_container">
+            <form id="new_item_form" method="post">
+                {% csrf_token %}
+                <select name="dish" id="dish" form="new_item_form">
+                    {% for dish in dishes_to_select %}
+                        <option value="{{ dish.id }}" style="background-color: {% if dish.is_available %} green {% else %} red {% endif %}">{{ dish.name }}</option>
+                    {% endfor %}
+                </select>
+                <input type="number" placeholder="Quantity:" name="quantity">
+                <input type="submit">
+            </form>
+        </div>
+    </div>
+
+    <script>
+        var addItemBtn = document.getElementById("add_item");
+        var formContainer = document.getElementById("form_container");
+        addItemBtn.onclick = function(e) {
+            formContainer.style.display = formContainer.style.display === 'block' ? 'none' : 'block';
+        }
+
+
+    </script>
+</body>
+</html>

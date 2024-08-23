@@ -18,8 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 
 from api import urls as api_urls
+from kitchen_management import urls as kitchen_management_urls
+from waiters import urls as waiters_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(api_urls)),
+    path('management/',  include(kitchen_management_urls)),
+    path('waiter/', include(waiters_urls)),
 ]

@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 
 
+app_name = 'api'
+
 urlpatterns = [
     #RESTAURANTS
     path('v1/restaurants/', views.get_restaurants_response, name="restaurants"),

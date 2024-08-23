@@ -1,0 +1,24 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TEST WAITER</title>
+    <link rel="stylesheet" href="{% static 'waiters/waiter_initial.css' %}">
+</head>
+<body>
+    <h1>WAITER</h1>
+
+    <div class="tables">
+        {% for table in tables_to_display %}
+            <a style="background-color: {% if table.is_available %} green {% else %} red {% endif %}" href="{% url 'waiters:new_order' table.id%}">
+                <p>TABLE: {{ table.number }}</p>
+            </a>
+        {% endfor %}
+    </div>
+
+
+    <a href="">Create a new Takeaway Order</a> <!--TODO: add url-->
+</body>
+</html>

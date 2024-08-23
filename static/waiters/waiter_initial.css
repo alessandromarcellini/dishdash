@@ -1,0 +1,9 @@
+.tables {
+    display: flex;
+    background-color: yellow;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.card {
+}

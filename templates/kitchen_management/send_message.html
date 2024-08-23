@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SEND MSG</title>
+</head>
+<body>
+
+    <h1>TEST</h1>
+        <input type="text" id="msg">
+        <input type="submit" id="submit_btn">
+
+
+    <script>
+        const socket = new WebSocket("ws://" + window.location.host + "/ws/{{ kitchen_section.id }}/");
+        console.log(socket);
+
+        var submit_btn = document.getElementById("submit_btn");
+        var msg = document.getElementById("msg");
+
+
+        submit_btn.onclick = function(e) {
+            console.log(msg.value);
+            socket.send(JSON.stringify(
+                {
+                    "sender": "{{ user.username }}",
+                    "message": msg.value,
+                }
+               )
+            )
+        }
+
+
+
+
+
+
+
+    </script>
+
+</body>
+</html>
