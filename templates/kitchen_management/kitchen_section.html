@@ -63,8 +63,8 @@
                 {% endif %}
                 {% for orderItem in order.dishes.all %}
                     <div class="item_container">
-                        <p class="{% if orderItem.is_done%} done {% else %} to_do {% endif %}">{{ orderItem.dish.name }} x {{ orderItem.quantity }}</p>
-                        <div class="check_complete" id="compleate_{{ orderItem.id }}" item-id="{{ orderItem.id }}" item-txt="{{ orderItem.dish.name }} x {{ orderItem.quantity }}"></div>
+                        <p class="{% if orderItem.is_done %} done {% else %} to_do {% endif %}">{{ orderItem.dish.name }} x {{ orderItem.quantity }}</p>
+                        <div class="{% if orderItem.is_done %} check_incomplete {% else %} check_complete {% endif %}" id="complete_{{ orderItem.id }}" item-id="{{ orderItem.id }}" item-txt="{{ orderItem.dish.name }} x {{ orderItem.quantity }}"></div>
                     </div>
                 {% endfor %}
             </div>
@@ -85,16 +85,35 @@
         }
 
         function check_complete(check) {
-            console.log(check.getAttribute("item-id"));
+            const item_id = check.getAttribute("item-id");
             var item_txt = check.getAttribute("item-txt");
             if (window.confirm('Are you sure you want to check "' + item_txt + '" as complete?')) {
-                console.log("YS");
+
+                var post_data = {
+                    "is_done": true,
+                };
+                const base_url = "{% url 'api:update_item_status' 0 %}".replace("/0/", "/");
+                const request_url = `${base_url}${item_id}/`
+
+                fetch(request_url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}",
+                    },
+                    body: JSON.stringify(post_data),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Success:", data);
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                });
             }
             else {
                 return;
             }
-
-            //TODO: send to the api the request to make it done
 
             //change the element
             check.className = "check_incomplete";
@@ -105,11 +124,31 @@
         }
 
         function check_incomplete(check) {
-            console.log(check.getAttribute("item-id"));
-            //TODO: send to the api the request to make it not done
+            const item_id = check.getAttribute("item-id");
+
             var item_txt = check.getAttribute("item-txt");
             if (window.confirm('Are you sure you want to check "' + item_txt + '" as not complete?')) {
-                console.log("YS");
+                var post_data = {
+                    "is_done": false,
+                };
+                const base_url = "{% url 'api:update_item_status' 0 %}".replace("/0/", "/");
+                const request_url = `${base_url}${item_id}/`
+
+                fetch(request_url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}",
+                    },
+                    body: JSON.stringify(post_data),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Success:", data);
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                });
             }
             else {
                 return;
@@ -154,9 +193,20 @@
                 var to_append;
                 if (output) {
                     //append p to output
-                    to_append = document.createElement("p");
-                    to_append.textContent = data.data.dish_name + " x " + data.data.quantity;
-                    to_append.className = data.data.is_dish_done ? "done" : "to_do";
+                    to_append = document.createElement("div");
+                    to_append.className = "item_container";
+                    const text = document.createElement("p");
+                    text.textContent = data.data.dish_name + " x " + data.data.quantity;
+                    text.className = data.data.is_dish_done ? "done" : "to_do";
+
+                    const check = document.createElement("div");
+                    check.className = data.data.is_dish_done ? "check_incomplete" : "check_complete";
+                    //id="complete_{{ orderItem.id }}" item-id="{{ orderItem.id }}" item-txt="{{ orderItem.dish.name }} x {{ orderItem.quantity }}"
+                    check.onclick = function(e) {
+                        check_complete(check);
+                    }
+                    to_append.appendChild(text);
+                    to_append.appendChild(check);
                 }
                 else {
                     //append new order

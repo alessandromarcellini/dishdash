@@ -14,7 +14,6 @@ def kitchen_section_orders_view(request, kitchen_section_id):
 
     #get all orders having the kitchen_section in it
     orders_to_display = Order.objects.filter(dishes__dish__restaurant_section__id=kitchen_section_id, fullfilled=False).distinct()
-    print(orders_to_display)
     context["orders_to_display"] = orders_to_display
     context["user"] = request.user
 

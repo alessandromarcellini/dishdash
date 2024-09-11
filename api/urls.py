@@ -20,4 +20,7 @@ urlpatterns = [
 
     # GENERAL
     path('v1/tables/', views.get_tables_response, name="tables"),
+
+    #ORDERITEMS
+    path('v1/items/update/<int:item_id>/', views.update_item_status, name="update_item_status")
 ]

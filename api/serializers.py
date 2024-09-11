@@ -44,3 +44,9 @@ class MenuSerializer(serializers.ModelSerializer):
         model = Dish
         fields = '__all__'
 
+
+class UpdateOrderItemStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ['is_done']
+

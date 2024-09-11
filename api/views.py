@@ -1,4 +1,5 @@
 from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from .models import *
 from .serializers import *
@@ -84,7 +85,22 @@ def get_current_reservations(request, restaurant_id):
 
     return Response(serializer.data)
 
+
+@api_view(['POST'])
+def update_item_status(request, item_id):
+    item = get_object_or_404(OrderItem, id=item_id)
+    serializer = UpdateOrderItemStatusSerializer(item, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+
+
+
+
 #TODO: get_reservations with a specific date
+
+
+
 
 
 
